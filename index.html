@@ -3,197 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Chore Tracker</title>
+    <title>Household Dashboard</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            margin: 20px; 
-            background-color: #f9f9f9;
-        }
-        h2 { color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; }
+        h2 { color: #1a73e8; border-bottom: 2px solid #1a73e8; padding-bottom: 10px; }
+        h3 { margin-top: 0; color: #444; }
         
-        /* Laundry Slider Section */
-        .laundry-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            max-width: 760px;
-            margin-bottom: 20px;
-            border-left: 5px solid #28a745;
-        }
-        .laundry-label {
-            font-size: 18px;
-            font-weight: bold;
-            color: #444;
-            display: block;
-            margin-bottom: 10px;
-        }
-        .slider {
-            width: 100%;
-            cursor: pointer;
-        }
-        .status-text {
-            font-size: 14px;
-            color: #666;
-            margin-top: 5px;
+        .card {
+            background: white; padding: 20px; border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-width: 900px;
+            margin-bottom: 25px; border-top: 5px solid #1a73e8;
         }
 
-        /* Table Section */
-        table { 
-            border-collapse: collapse; 
-            width: 100%; 
-            max-width: 800px; 
-            background-color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        th, td { 
-            border: 1px solid #ddd; 
-            padding: 12px; 
-            text-align: center; 
-        }
-        th { 
-            background-color: #007BFF; 
-            color: white; 
-        }
-        .chore-name { 
-            text-align: left; 
-            font-weight: bold; 
-            color: #444;
-        }
-        .goal-text {
-            font-size: 12px;
-            font-weight: normal;
-            color: #666;
-            display: block;
-        }
-        input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
+        /* Tables */
+        table { border-collapse: collapse; width: 100%; margin-bottom: 10px; }
+        th, td { border: 1px solid #e0e0e0; padding: 12px; text-align: center; }
+        th { background-color: #f8f9fa; font-weight: 600; }
+        .chore-name { text-align: left; font-weight: bold; width: 150px; }
+        .remaining-count { font-weight: bold; color: #d93025; }
+        .goal-met { color: #1e8e3e; font-weight: bold; }
+
+        /* Grocery Sliders */
+        .grocery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .grocery-item { margin-bottom: 15px; }
+        .grocery-item label { display: flex; justify-content: space-between; font-weight: 500; margin-bottom: 5px; }
+        .slider { width: 100%; cursor: pointer; height: 8px; border-radius: 5px; background: #ddd; outline: none; }
+
+        /* Low Stock Checkboxes */
+        .low-stock-section { display: flex; gap: 20px; margin-top: 20px; padding: 15px; background: #fff4f4; border-radius: 8px; }
+        .low-stock-item { display: flex; align-items: center; gap: 10px; font-weight: bold; color: #b71c1c; }
+
+        /* Notes Area */
+        .notes-area { width: 100%; margin-top: 15px; }
+        textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; height: 80px; font-family: inherit; box-sizing: border-box; }
+
         button { 
-            margin-top: 20px; 
-            padding: 10px 15px; 
-            background-color: #dc3545; 
-            color: white; 
-            border: none; 
-            border-radius: 4px;
-            cursor: pointer; 
-            font-size: 16px;
+            margin-top: 10px; padding: 10px 20px; background-color: #d93025; 
+            color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;
         }
-        button:hover { background-color: #c82333; }
+        button:hover { background-color: #b71c1c; }
+        input[type="checkbox"] { transform: scale(1.3); cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h2>Household Tracker</h2>
+    <h2>Household Dashboard</h2>
 
-    <div class="laundry-container">
-        <label class="laundry-label" for="laundrySlider">
-            Laundry Basket: <span id="laundryValue">0</span>% Full
-        </label>
-        <input type="range" id="laundrySlider" class="slider" min="0" max="100" value="0" oninput="updateLaundry()">
-        <div class="status-text">(0% = All clothes are clean and put away)</div>
+    <div class="card" style="border-top-color: #34a853;">
+        <h3>Laundry & Clothes</h3>
+        <label style="font-weight: bold;">Basket Status: <span id="laundryValue">0</span>% Full</label>
+        <input type="range" id="laundrySlider" class="slider" min="0" max="100" value="0" oninput="updateItem('laundrySlider', 'laundryValue', 'laundryLevel')">
+        <p style="font-size: 0.85em; color: #666;">(0% = All clean)</p>
     </div>
 
-    <table id="choreTable">
-        </table>
+    <div class="card">
+        <h3>Weekly Chores</h3>
+        <table id="choreTable"></table>
+        <button onclick="clearTracker()">Reset Weekly Checklist</button>
+    </div>
 
-    <button onclick="clearTracker()">Reset Checklist for the New Week</button>
+    <div class="card" style="border-top-color: #fbbc04;">
+        <h3>Grocery Inventory</h3>
+        <div class="grocery-grid">
+            <div class="grocery-item">
+                <label>Eggs <span id="val-eggs">0</span>%</label>
+                <input type="range" id="slide-eggs" class="slider" oninput="updateItem('slide-eggs', 'val-eggs', 'inv-eggs')">
+            </div>
+            <div class="grocery-item">
+                <label>Breakfast <span id="val-breakfast">0</span>%</label>
+                <input type="range" id="slide-breakfast" class="slider" oninput="updateItem('slide-breakfast', 'val-breakfast', 'inv-breakfast')">
+            </div>
+            <div class="grocery-item">
+                <label>Milk <span id="val-milk">0</span>%</label>
+                <input type="range" id="slide-milk" class="slider" oninput="updateItem('slide-milk', 'val-milk', 'inv-milk')">
+            </div>
+            <div class="grocery-item">
+                <label>Protein <span id="val-protein">0</span>%</label>
+                <input type="range" id="slide-protein" class="slider" oninput="updateItem('slide-protein', 'val-protein', 'inv-protein')">
+            </div>
+            <div class="grocery-item">
+                <label>Fruits <span id="val-fruits">0</span>%</label>
+                <input type="range" id="slide-fruits" class="slider" oninput="updateItem('slide-fruits', 'val-fruits', 'inv-fruits')">
+            </div>
+            <div class="grocery-item">
+                <label>Vegetables <span id="val-veggies">0</span>%</label>
+                <input type="range" id="slide-veggies" class="slider" oninput="updateItem('slide-veggies', 'val-veggies', 'inv-veggies')">
+            </div>
+            <div class="grocery-item" style="grid-column: span 1;">
+                <label>Hot Pot Ingredients <span id="val-hotpot">0</span>%</label>
+                <input type="range" id="slide-hotpot" class="slider" oninput="updateItem('slide-hotpot', 'val-hotpot', 'inv-hotpot')">
+            </div>
+        </div>
+
+        <div class="low-stock-section">
+            <div class="low-stock-item">
+                <input type="checkbox" id="check-powders" onchange="saveCheck('check-powders')"> Powders Low?
+            </div>
+            <div class="low-stock-item">
+                <input type="checkbox" id="check-spices" onchange="saveCheck('check-spices')"> Spices Low?
+            </div>
+        </div>
+
+        <div class="notes-area">
+            <label style="font-weight: bold; display: block; margin-bottom: 5px;">Missing Details / Specific Items:</label>
+            <textarea id="grocery-notes" placeholder="e.g. Need more cumin, protein powder is vanilla..." oninput="saveNotes()"></textarea>
+        </div>
+    </div>
 
     <script>
-        // 1. Defined chores with their weekly goals
         const chores = [
-            { name: "Cooking", goal: "2x a week" },
-            { name: "Dish Wash", goal: "3x a week" },
-            { name: "Vacuum", goal: "1x a week" }
+            { name: "Cooking", goal: 2 },
+            { name: "Dish Wash", goal: 3 },
+            { name: "Vacuum", goal: 1 }
         ];
         const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        const sliderItems = ['eggs', 'breakfast', 'milk', 'protein', 'fruits', 'veggies', 'hotpot'];
 
-        const table = document.getElementById("choreTable");
+        // --- Core Functions ---
 
-        // 2. Build the table layout
+        function updateItem(sliderId, displayId, storageKey) {
+            const val = document.getElementById(sliderId).value;
+            document.getElementById(displayId).innerText = val;
+            localStorage.setItem(storageKey, val);
+        }
+
+        function saveCheck(id) {
+            localStorage.setItem(id, document.getElementById(id).checked);
+        }
+
+        function saveNotes() {
+            localStorage.setItem('groceryNotes', document.getElementById('grocery-notes').value);
+        }
+
+        // --- Chore Table Logic ---
+
         function buildTable() {
-            let headerRow = "<tr><th>Chore & Goal</th>";
-            days.forEach(day => {
-                headerRow += `<th>${day}</th>`;
-            });
+            const table = document.getElementById("choreTable");
+            let headerRow = "<tr><th>Chore</th><th>Remaining</th>";
+            days.forEach(day => headerRow += `<th>${day}</th>`);
             headerRow += "</tr>";
-            table.innerHTML += headerRow;
+            table.innerHTML = headerRow;
 
             chores.forEach(chore => {
                 let row = `<tr>
-                    <td class="chore-name">
-                        ${chore.name}
-                        <span class="goal-text">Goal: ${chore.goal}</span>
-                    </td>`;
+                    <td class="chore-name">${chore.name} (Goal: ${chore.goal})</td>
+                    <td id="remaining-${chore.name}" class="remaining-count"></td>`;
                 days.forEach(day => {
-                    const cellId = `${day}-${chore.name}`;
-                    row += `<td><input type="checkbox" id="${cellId}" onchange="saveCheckbox('${cellId}')"></td>`;
+                    const id = `${day}-${chore.name}`;
+                    row += `<td><input type="checkbox" id="${id}" onchange="updateChore('${chore.name}', '${id}')"></td>`;
                 });
                 row += "</tr>";
                 table.innerHTML += row;
             });
-
-            // Load saved data on startup
-            loadProgress();
+            loadAll();
         }
 
-        // 3. Save checkbox state
-        function saveCheckbox(id) {
-            const checkbox = document.getElementById(id);
-            localStorage.setItem(id, checkbox.checked);
+        function updateChore(name, id) {
+            localStorage.setItem(id, document.getElementById(id).checked);
+            calculateRemaining(name);
         }
 
-        // 4. Update and save Laundry Slider
-        function updateLaundry() {
-            const sliderValue = document.getElementById("laundrySlider").value;
-            document.getElementById("laundryValue").innerText = sliderValue;
-            localStorage.setItem("laundryLevel", sliderValue);
+        function calculateRemaining(name) {
+            const chore = chores.find(c => c.name === name);
+            let count = 0;
+            days.forEach(d => { if(localStorage.getItem(`${d}-${name}`) === "true") count++; });
+            const rem = chore.goal - count;
+            const el = document.getElementById(`remaining-${name}`);
+            el.innerText = rem <= 0 ? "Goal Met!" : `${rem} remaining`;
+            el.className = rem <= 0 ? "goal-met" : "remaining-count";
         }
 
-        // 5. Load everything from Local Storage
-        function loadProgress() {
-            // Load checkboxes
-            chores.forEach(chore => {
-                days.forEach(day => {
-                    const cellId = `${day}-${chore.name}`;
-                    const savedState = localStorage.getItem(cellId);
-                    if (savedState === "true") {
-                        document.getElementById(cellId).checked = true;
-                    }
+        // --- Initialization ---
+
+        function loadAll() {
+            // Load Chores
+            chores.forEach(c => {
+                days.forEach(d => {
+                    const status = localStorage.getItem(`${d}-${c.name}`);
+                    if(status === "true") document.getElementById(`${d}-${c.name}`).checked = true;
                 });
+                calculateRemaining(c.name);
             });
 
-            // Load laundry slider
-            const savedLaundry = localStorage.getItem("laundryLevel");
-            if (savedLaundry !== null) {
-                document.getElementById("laundrySlider").value = savedLaundry;
-                document.getElementById("laundryValue").innerText = savedLaundry;
-            }
+            // Load Laundry
+            const lndry = localStorage.getItem('laundryLevel') || 0;
+            document.getElementById('laundrySlider').value = lndry;
+            document.getElementById('laundryValue').innerText = lndry;
+
+            // Load Grocery Sliders
+            sliderItems.forEach(item => {
+                const val = localStorage.getItem(`inv-${item}`) || 0;
+                document.getElementById(`slide-${item}`).value = val;
+                document.getElementById(`val-${item}`).innerText = val;
+            });
+
+            // Load Low Stock Checks
+            ['check-powders', 'check-spices'].forEach(id => {
+                if(localStorage.getItem(id) === "true") document.getElementById(id).checked = true;
+            });
+
+            // Load Notes
+            document.getElementById('grocery-notes').value = localStorage.getItem('groceryNotes') || "";
         }
 
-        // 6. Clear only the weekly chores
         function clearTracker() {
-            if(confirm("Are you sure you want to reset the weekly checklist? (Your laundry status will remain saved).")) {
-                
-                // Specifically remove ONLY the checkboxes from memory
-                chores.forEach(chore => {
-                    days.forEach(day => {
-                        const cellId = `${day}-${chore.name}`;
-                        localStorage.removeItem(cellId);
-                        
-                        // Uncheck it visually on the screen
-                        document.getElementById(cellId).checked = false;
+            if(confirm("Reset the weekly checklist?")) {
+                chores.forEach(c => {
+                    days.forEach(d => {
+                        localStorage.removeItem(`${d}-${c.name}`);
+                        document.getElementById(`${d}-${c.name}`).checked = false;
                     });
+                    calculateRemaining(c.name);
                 });
             }
         }
 
-        // Initialize!
         buildTable();
     </script>
 </body>
-          </html>
-          
+</html>
