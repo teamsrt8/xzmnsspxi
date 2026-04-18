@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Chore Tracker</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f9f9f9;
+        }
+        h2 { color: #333; }
+        
+        /* Laundry Slider Section */
+        .laundry-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 760px;
+            margin-bottom: 20px;
+            border-left: 5px solid #28a745;
+        }
+        .laundry-label {
+            font-size: 18px;
+            font-weight: bold;
+            color: #444;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .slider {
+            width: 100%;
+            cursor: pointer;
+        }
+        .status-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Table Section */
+        table { 
+            border-collapse: collapse; 
+            width: 100%; 
+            max-width: 800px; 
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 12px; 
+            text-align: center; 
+        }
+        th { 
+            background-color: #007BFF; 
+            color: white; 
+        }
+        .chore-name { 
+            text-align: left; 
+            font-weight: bold; 
+            color: #444;
+        }
+        .goal-text {
+            font-size: 12px;
+            font-weight: normal;
+            color: #666;
+            display: block;
+        }
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        button { 
+            margin-top: 20px; 
+            padding: 10px 15px; 
+            background-color: #dc3545; 
+            color: white; 
+            border: none; 
+            border-radius: 4px;
+            cursor: pointer; 
+            font-size: 16px;
+        }
+        button:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+
+    <h2>Household Tracker</h2>
+
+    <div class="laundry-container">
+        <label class="laundry-label" for="laundrySlider">
+            Laundry Basket: <span id="laundryValue">0</span>% Full
+        </label>
+        <input type="range" id="laundrySlider" class="slider" min="0" max="100" value="0" oninput="updateLaundry()">
+        <div class="status-text">(0% = All clothes are clean and put away)</div>
+    </div>
+
+    <table id="choreTable">
+        </table>
+
+    <button onclick="clearTracker()">Reset Checklist for the New Week</button>
+
+    <script>
+        // 1. Defined chores with their weekly goals
+        const chores = [
+            { name: "Cooking", goal: "2x a week" },
+            { name: "Dish Wash", goal: "3x a week" },
+            { name: "Vacuum", goal: "1x a week" }
+        ];
+        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+        const table = document.getElementById("choreTable");
+
+        // 2. Build the table layout
+        function buildTable() {
+            let headerRow = "<tr><th>Chore & Goal</th>";
+            days.forEach(day => {
+                headerRow += `<th>${day}</th>`;
+            });
+            headerRow += "</tr>";
+            table.innerHTML += headerRow;
+
+            chores.forEach(chore => {
+                let row = `<tr>
+                    <td class="chore-name">
+                        ${chore.name}
+                        <span class="goal-text">Goal: ${chore.goal}</span>
+                    </td>`;
+                days.forEach(day => {
+                    const cellId = `${day}-${chore.name}`;
+                    row += `<td><input type="checkbox" id="${cellId}" onchange="saveCheckbox('${cellId}')"></td>`;
+                });
+                row += "</tr>";
+                table.innerHTML += row;
+            });
+
+            // Load saved data on startup
+            loadProgress();
+        }
+
+        // 3. Save checkbox state
+        function saveCheckbox(id) {
+            const checkbox = document.getElementById(id);
+            localStorage.setItem(id, checkbox.checked);
+        }
+
+        // 4. Update and save Laundry Slider
+        function updateLaundry() {
+            const sliderValue = document.getElementById("laundrySlider").value;
+            document.getElementById("laundryValue").innerText = sliderValue;
+            localStorage.setItem("laundryLevel", sliderValue);
+        }
+
+        // 5. Load everything from Local Storage
+        function loadProgress() {
+            // Load checkboxes
+            chores.forEach(chore => {
+                days.forEach(day => {
+                    const cellId = `${day}-${chore.name}`;
+                    const savedState = localStorage.getItem(cellId);
+                    if (savedState === "true") {
+                        document.getElementById(cellId).checked = true;
+                    }
+                });
+            });
+
+            // Load laundry slider
+            const savedLaundry = localStorage.getItem("laundryLevel");
+            if (savedLaundry !== null) {
+                document.getElementById("laundrySlider").value = savedLaundry;
+                document.getElementById("laundryValue").innerText = savedLaundry;
+            }
+        }
+
+        // 6. Clear only the weekly chores
+        function clearTracker() {
+            if(confirm("Are you sure you want to reset the weekly checklist? (Your laundry status will remain saved).")) {
+                
+                // Specifically remove ONLY the checkboxes from memory
+                chores.forEach(chore => {
+                    days.forEach(day => {
+                        const cellId = `${day}-${chore.name}`;
+                        localStorage.removeItem(cellId);
+                        
+                        // Uncheck it visually on the screen
+                        document.getElementById(cellId).checked = false;
+                    });
+                });
+            }
+        }
+
+        // Initialize!
+        buildTable();
+    </script>
+</body>
+          </html>
+          
